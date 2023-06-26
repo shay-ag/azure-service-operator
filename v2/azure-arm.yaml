@@ -1266,14 +1266,6 @@ objectModelConfiguration:
       UserAssignedIdentities_FederatedIdentityCredential:
         $exportAs: FederatedIdentityCredential
         $supportedFrom: v2.0.0-beta.3
-  managedClusters_TrustedAccessRoleBinding:
-    2023-02-02-preview:
-      ManagedCluster:
-        $export: true
-        $supportedFrom: v2.0.0
-        $azureGeneratedSecrets:
-          - AdminCredentials
-          - UserCredentials
   machinelearningservices:
     2021-07-01:
       AksNetworkingConfiguration:
