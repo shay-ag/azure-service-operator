@@ -8,11 +8,13 @@ package controllers_test
 import (
 	"testing"
 
-	// . "github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 
 	// resources "github.com/Azure/azure-service-operator/v2/api/resources/v1api20200601"
 
 	aks "github.com/Azure/azure-service-operator/v2/api/containerservice/v1api20230202preview"
+	// trustedaccess "github.com/Azure/azure-service-operator/v2/api/containerservice/v1api20230202preview"
+
 	dataprotection "github.com/Azure/azure-service-operator/v2/api/dataprotection/v1api20230101"
 	"github.com/Azure/azure-service-operator/v2/internal/testcommon"
 	// The to package includes utilities for converting values to pointers.
@@ -22,6 +24,8 @@ import (
 )
 
 // Create a AKS Cluster
+
+// Creation of Trusted Access Resource
 
 func Test_Dataprotection_Backupinstance_CRUD(t *testing.T) {
 	// indicates that this test function can run in parallel with other tests
@@ -88,6 +92,26 @@ func Test_Dataprotection_Backupinstance_CRUD(t *testing.T) {
 	}
 
 	tc.CreateResourceAndWait(cluster)
+
+	// Create a TrustedAccess
+
+	ResourceId := "/subscriptions/f0c630e0-2995-4853-b056-0b3c09cb673f/resourceGroups/t-agrawals/providers/Microsoft.ContainerService/managedClusters/shayAKScluster"
+
+	trustedAccess := &aks.ManagedClustersTrustedAccessRoleBinding{
+		ObjectMeta: tc.MakeObjectMeta("trustedaccess"),
+		Spec: aks.ManagedClusters_TrustedAccessRoleBinding_Spec{
+			Owner:     testcommon.AsOwner(cluster),
+			AzureName: "asotesttrustedaccess",
+			Roles:     []string{"backup-operator"},
+			SourceResourceReference: &genruntime.ResourceReference{
+				ARMID: ResourceId,
+			},
+		},
+	}
+
+	tc.CreateResourceAndWait(trustedAccess)
+
+	tc.Expect(trustedAccess.Status.ProvisioningState).To(BeEquivalentTo(to.Ptr(aks.TrustedAccessRoleBindingProperties_ProvisioningState_STATUS_Succeeded)))
 
 	// CONSTANTS: BACKUP_INSTANCE
 	// consts for BackupInstance:PolicyInfo:DataStoreParameters
